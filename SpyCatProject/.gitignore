@@ -1,0 +1,96 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django specific files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.env               # Environment variables
+db.sqlite3          # Database file
+
+# Django Migrations
+*/migrations/*
+
+# If you are using MySQL or PostgreSQL
+*.sql
+*.psql
+*.pgsql
+
+# Static and media files
+/static/
+*/staticfiles/*
+/media/
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# macOS
+.DS_Store
+
+# Environment configuration files
+.env
+*.env
+.env.*.local
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Pytest
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Unit test / coverage reports
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Docker
+*.log
+*.pid
+*.seed
+*.pid.lock
+**/.dockerignore
+
+# Ignore SQLite Database files
+*.sqlite3
+
+# Temporary files
+*.tmp
