@@ -1,6 +1,7 @@
 # Test project for Spy Cats Agency
 
 It is built using Django and DRF
+Database: SQLite
 
 ## Run locally:
 - pull the main branch
