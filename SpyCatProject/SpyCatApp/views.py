@@ -82,10 +82,7 @@ class MissionDetailView(APIView):
         return Response(serializer.data)
 
     def delete(self, request, pk):
-        try:
-            mission = Mission.objects.get(pk=pk)
-        except Mission.DoesNotExist:
-            return Response({"error": "Mission not found"}, status=status.HTTP_404_NOT_FOUND)
+        mission = get_object_or_404(Mission, pk=pk)
 
         # validation that Mission is assigned to someone
         if mission.cat is not None:
@@ -115,22 +112,15 @@ class AssignCatToMissionView(APIView):
         }
     )
     def post(self, request, mission_id):
-        try:
-            mission = Mission.objects.get(pk=mission_id)
-        except Mission.DoesNotExist:
-            return Response({"error": "Mission not found"}, status=status.HTTP_404_NOT_FOUND)
+        mission = get_object_or_404(Mission, pk=mission_id)
         cat_id = request.data.get('cat')
         if cat_id is None:
             return Response({"error": "cat_id is required to assign a cat to this mission."},
                             status=status.HTTP_400_BAD_REQUEST)
-        try:
-            cat = SpyCat.objects.get(pk=cat_id)
-        except SpyCat.DoesNotExist:
-            return Response({"error": "Cat not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        cat = get_object_or_404(SpyCat, pk=cat_id)
         mission.cat = cat
         mission.save()
-
         return Response({"message": f"Cat {cat.name} assigned to mission successfully."},
                         status=status.HTTP_200_OK)
 
@@ -146,10 +136,7 @@ class TargetUpdateView(APIView):
         }
     )
     def patch(self, request, target_id):
-        try:
-            target = Target.objects.get(pk=target_id)
-        except Target.DoesNotExist:
-            return Response({"error": "Target not found"}, status=status.HTTP_404_NOT_FOUND)
+        target = get_object_or_404(Target, pk=target_id)
         serializer = TargetUpdateSerializer(target, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
