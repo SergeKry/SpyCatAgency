@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import SpyCat
-from .serializers import SpyCatSerializer, EditSpyCatSerializer
+from .models import SpyCat, Mission, Target
+from .serializers import SpyCatSerializer, EditSpyCatSerializer, MissionSerializer, TargetUpdateSerializer
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -50,3 +50,108 @@ class SpyCatDetailView(APIView):
         spy_cat = get_object_or_404(SpyCat, pk=pk)
         spy_cat.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MissionCreateView(APIView):
+    @swagger_auto_schema(
+        operation_description="Create a new Mission with associated Targets",
+        request_body=MissionSerializer,
+        responses={
+            201: openapi.Response("Mission created successfully", MissionSerializer),
+            400: "Bad Request - Invalid input data",
+        }
+    )
+    def post(self, request):
+        serializer = MissionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        missions = Mission.objects.all()
+        serializer = MissionSerializer(missions, many=True)
+        return Response(serializer.data)
+
+
+class MissionDetailView(APIView):
+
+    def get(self, request, pk):
+        mission = get_object_or_404(Mission, pk=pk)
+        serializer = MissionSerializer(mission)
+        return Response(serializer.data)
+
+    def delete(self, request, pk):
+        try:
+            mission = Mission.objects.get(pk=pk)
+        except Mission.DoesNotExist:
+            return Response({"error": "Mission not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # validation that Mission is assigned to someone
+        if mission.cat is not None:
+            return Response({"error": "This mission is assigned to a cat and cannot be deleted."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        mission.delete()
+        return Response({"message": "Mission deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class AssignCatToMissionView(APIView):
+    @swagger_auto_schema(
+        operation_description="Assign a cat to a mission.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['cat'],
+            properties={
+                'cat': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the cat to assign to the mission')
+            },
+            example={
+                'cat': 2
+            }
+        ),
+        responses={
+            200: openapi.Response("Cat assigned successfully."),
+            400: openapi.Response("Bad request - invalid input."),
+            404: openapi.Response("Not found - Mission or Cat not found."),
+        }
+    )
+    def post(self, request, mission_id):
+        try:
+            mission = Mission.objects.get(pk=mission_id)
+        except Mission.DoesNotExist:
+            return Response({"error": "Mission not found"}, status=status.HTTP_404_NOT_FOUND)
+        cat_id = request.data.get('cat')
+        if cat_id is None:
+            return Response({"error": "cat_id is required to assign a cat to this mission."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            cat = SpyCat.objects.get(pk=cat_id)
+        except SpyCat.DoesNotExist:
+            return Response({"error": "Cat not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        mission.cat = cat
+        mission.save()
+
+        return Response({"message": f"Cat {cat.name} assigned to mission successfully."},
+                        status=status.HTTP_200_OK)
+
+
+class TargetUpdateView(APIView):
+    @swagger_auto_schema(
+        operation_description="Update a target",
+        request_body=TargetUpdateSerializer,
+        responses={
+            200: openapi.Response("Target updated successfully.", TargetUpdateSerializer),
+            400: "Bad Request - Validation error.",
+            404: "Not found - Target not found.",
+        }
+    )
+    def patch(self, request, target_id):
+        try:
+            target = Target.objects.get(pk=target_id)
+        except Target.DoesNotExist:
+            return Response({"error": "Target not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = TargetUpdateSerializer(target, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
