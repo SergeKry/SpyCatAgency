@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import SpyCat, Mission, Target
 from .breeds import get_breeds
-from django.db import transaction
 
 
 class SpyCatSerializer(serializers.ModelSerializer):
