@@ -20,11 +20,6 @@ class Mission(models.Model):
         # Validation for single mission per cat
         if not self.complete:
             incomplete_missions = Mission.objects.filter(cat=self.cat, complete=False)
-
-            # this block is used for update operation
-            if self.pk:
-                incomplete_missions = incomplete_missions.exclude(pk=self.pk)
-
             if incomplete_missions.exists():
                 raise ValidationError("This cat already has an incomplete mission.")
 
