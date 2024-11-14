@@ -15,4 +15,4 @@ Database: SQLite
 - swagger documentation is available at /swagger
 
 ## Postman collection
-[Postman collection link](https://www.postman.com/krivosheevsrg/workspace/my-workspace/folder/11250009-ea01e900-8888-49e4-b93d-a70ccb24965e?action=share&source=copy-link&creator=11250009&ctx=documentation)
+[Postman collection link](https://www.postman.com/krivosheevsrg/workspace/my-workspace/folder/11250009-2bb0b5b2-8fd3-477e-b517-890346bba81e?action=share&source=copy-link&creator=11250009&ctx=documentation)

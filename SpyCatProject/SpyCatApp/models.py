@@ -16,17 +16,6 @@ class Mission(models.Model):
     cat = models.ForeignKey(SpyCat, on_delete=models.CASCADE, related_name='missions', null=True, blank=True)
     complete = models.BooleanField(default=False)
 
-    def clean(self):
-        # Validation for single mission per cat
-        if not self.complete:
-            incomplete_missions = Mission.objects.filter(cat=self.cat, complete=False)
-            if incomplete_missions.exists():
-                raise ValidationError("This cat already has an incomplete mission.")
-
-    def save(self, *args, **kwargs):
-        self.full_clean()
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return f"Mission for {self.cat.name}"
 

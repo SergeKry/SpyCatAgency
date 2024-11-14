@@ -2,7 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import SpyCat, Mission, Target
-from .serializers import SpyCatSerializer, EditSpyCatSerializer, MissionSerializer, TargetUpdateSerializer
+from .serializers import (SpyCatSerializer,
+                          EditSpyCatSerializer,
+                          MissionSerializer,
+                          TargetUpdateSerializer,
+                          MissionSerializerBase)
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -95,34 +99,24 @@ class MissionDetailView(APIView):
 class AssignCatToMissionView(APIView):
     @swagger_auto_schema(
         operation_description="Assign a cat to a mission.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['cat'],
-            properties={
-                'cat': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the cat to assign to the mission')
-            },
-            example={
-                'cat': 2
-            }
-        ),
+        request_body=MissionSerializerBase,
         responses={
-            200: openapi.Response("Cat assigned successfully."),
-            400: openapi.Response("Bad request - invalid input."),
-            404: openapi.Response("Not found - Mission or Cat not found."),
+            200: openapi.Response("Cat assigned successfully.", MissionSerializerBase),
+            400: "Bad request - invalid input.",
+            404: "Not found - Mission or Cat not found.",
         }
     )
-    def post(self, request, mission_id):
+    def patch(self, request, mission_id):
+        serializer = MissionSerializerBase(data=request.data)
         mission = get_object_or_404(Mission, pk=mission_id)
         cat_id = request.data.get('cat')
-        if cat_id is None:
-            return Response({"error": "cat_id is required to assign a cat to this mission."},
-                            status=status.HTTP_400_BAD_REQUEST)
-
         cat = get_object_or_404(SpyCat, pk=cat_id)
-        mission.cat = cat
-        mission.save()
-        return Response({"message": f"Cat {cat.name} assigned to mission successfully."},
+        if serializer.is_valid():
+            mission.cat = cat
+            mission.save()
+            return Response({"message": f"Cat {cat.name} assigned to mission successfully."},
                         status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TargetUpdateView(APIView):

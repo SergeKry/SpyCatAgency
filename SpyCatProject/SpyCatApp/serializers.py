@@ -28,7 +28,23 @@ class TargetSerializer(serializers.ModelSerializer):
         fields = ['name', 'country', 'notes', 'complete']
 
 
-class MissionSerializer(serializers.ModelSerializer):
+class MissionSerializerBase(serializers.ModelSerializer):
+    class Meta:
+        model = Mission
+        fields = '__all__'
+
+    def validate(self, data):
+        """Here we check if cat has only 1 active mission"""
+        cat = data.get('cat')
+        complete = data.get('complete', False)
+        if cat and not complete:
+            incomplete_missions = Mission.objects.filter(cat=cat, complete=False)
+            if incomplete_missions.exists():
+                raise serializers.ValidationError("This cat already has an incomplete mission.")
+        return data
+
+
+class MissionSerializer(MissionSerializerBase):
     targets = TargetSerializer(many=True)
 
     class Meta:
